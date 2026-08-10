@@ -1,7 +1,7 @@
-name = "uu-summerschool-2025"
+name = "uu-summerschool-2026"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["UuSummerschool2025", "Site"]
+defaultTargets = ["UuSummerschool2026", "Site"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
@@ -16,4 +16,4 @@ name = "mathlib"
 scope = "leanprover-community"
 
 [[lean_lib]]
-name = "UuSummerschool2025"
+name = "UuSummerschool2026"
