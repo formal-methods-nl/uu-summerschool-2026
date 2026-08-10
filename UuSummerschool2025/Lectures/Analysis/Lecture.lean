@@ -32,6 +32,8 @@ The real numbers in Lean are actual real numbers, not floating point
 approximations.
 Internally, they are implemented via Cauchy sequences of rational numbers.
 -/
+
+#check ℝ
 /--
 info: ℝ : Type
 -/
@@ -100,7 +102,8 @@ example {x y z : ℝ} (hxy : x ≤ y) (hyz : y ≤ z) : x ≤ z := by
 We can find lemma names by using the library search tactic `exact?`.
 -/
 /--
-info: Try this: exact abs_add_le x y
+info: Try this:
+  [apply] exact abs_add_le x y
 -/
 #guard_msgs in
 example (x y : ℝ) : |x + y| ≤ |x| + |y| := by
@@ -303,6 +306,7 @@ lemma bounded_iff (a : ℕ → ℝ) :
     Bounded a ↔ ∃ (M : ℝ), ∀ n, |a n| ≤ M := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 If `a : ℕ → ℝ` is bounded by `M` for almost all `n : ℕ`, it is bounded
 everywhere.
@@ -325,6 +329,7 @@ lemma Bounded.of_le {a : ℕ → ℝ} (M : ℝ) (n₀ : ℕ) (h : ∀ n ≥ n₀
     · have : 0 ≤ M := (abs_nonneg (a n₀)).trans (h n₀ (Nat.le_refl n₀))
       simpa
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Any convergent sequence is bounded. -/
 lemma ConvergesTo.bounded {a : ℕ → ℝ} {x : ℝ} (h : ConvergesTo a x) :
     Bounded a := by
@@ -334,7 +339,7 @@ lemma ConvergesTo.bounded {a : ℕ → ℝ} {x : ℝ} (h : ConvergesTo a x) :
   specialize hn₀ n hn
   calc
     |a n| = |(a n - x) + x| := by ring_nf
-        _ ≤ |a n - x| + |x| := by apply abs_add
+        _ ≤ |a n - x| + |x| := by apply abs_add_le
         _ = |x - a n| + |x| := by rw [abs_sub_comm]
         _ ≤ 1 + |x| := by linarith
         _ = |x| + 1 := by ring
@@ -365,7 +370,7 @@ lemma ConvergesTo.mul {a b : ℕ → ℝ} {x y : ℝ} (ha : ConvergesTo a x)
   calc
     |x * y - (a * b) n| = |x * y - a n * b n| := by rfl
                       _ = |(x - a n) * y + a n * (y - b n)| := by ring_nf
-                      _ ≤ |(x - a n) * y| + |a n * (y - b n)| := by apply abs_add
+                      _ ≤ |(x - a n) * y| + |a n * (y - b n)| := by apply abs_add_le
                       _ = |x - a n| * |y| + |a n| * |y - b n| := by rw [abs_mul, abs_mul]
                       _ ≤ ε / (2 * C) * C + C * (ε / (2 * C)) := ?_
                       _ = ε := by field_simp; ring

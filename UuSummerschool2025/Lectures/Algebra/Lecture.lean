@@ -240,9 +240,11 @@ example (G : Type) [Semigroup G] (x y z w : G) :
 
 /- A very common mistake. -/
 /--
-error: tactic 'rewrite' failed, did not find instance of the pattern in the target expression
+error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   ?x ⋄ ?y
-x : ℝˣ
+in the target expression
+  1 ⋄ x = x
+ x : ℝˣ
 inst✝ : Semigroup ℝˣ
 ⊢ 1 ⋄ x = x
 -/
