@@ -3,7 +3,7 @@ Copyright (c) 2025 Christian Merten. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Christian Merten
 -/
-import UuSummerschool2025.Lectures.Analysis.Lecture
+import UuSummerschool2026.Lectures.Analysis.Lecture
 
 /-!
 # Exercises for real analysis and linear arithmetic
