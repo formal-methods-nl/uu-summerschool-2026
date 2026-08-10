@@ -1,7 +1,7 @@
 name = "uu-summerschool-2026"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["UuSummerschool2026", "Site"]
+defaultTargets = ["UuSummerschool2026"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
