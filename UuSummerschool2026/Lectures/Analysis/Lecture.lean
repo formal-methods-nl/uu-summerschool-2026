@@ -323,7 +323,7 @@ lemma Bounded.of_le {a : ℕ → ℝ} (M : ℝ) (n₀ : ℕ) (h : ∀ n ≥ n₀
     · simp only [le_add_iff_nonneg_right, Finset.le_sup'_iff]
       use 0
       simp [s]
-  · have hmem : m ∈ s := by simp [s]; omega
+  · have hmem : m ∈ s := by simp [s]; lia
     trans
     · exact Finset.le_sup' (fun k ↦ |a k|) hmem
     · have : 0 ≤ M := (abs_nonneg (a n₀)).trans (h n₀ (Nat.le_refl n₀))
