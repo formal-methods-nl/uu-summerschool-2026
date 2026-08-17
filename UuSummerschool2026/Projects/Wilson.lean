@@ -17,7 +17,7 @@ kind is to ask how the factorial behaves `mod n`.
 
 The most obvious question of this kind is to ask what `n! mod n` is. Of course, one quickly
 realises that this is a rather easy problem, since `n!` is clearly divisible by `n`, and so is
-`0 mod n`. However, we can ask the same question but not incluse `n` in the product,
+`0 mod n`. However, we can ask the same question but not include `n` in the product,
 instead taking `(n-1)!`, and the question becomes somewhat more interesting.
 
 Below are some computations showing the first few values of `(n-1)! mod n`,
@@ -195,7 +195,7 @@ we should have that `(n-1)! = 0 mod n`. The argument here is that we know that `
 thing must be `0`.
 -/
 
-theorem wilson2 {h : n ≠ 0} : n ≠ 4 → ((n - 1)! : ZMod n) = 0 := by plausible
+theorem wilson2 (h : n ≠ 0) : n ≠ 4 → ((n - 1)! : ZMod n) = 0 := by plausible
 
 /-
 Oh no, our theorem doesn't hold! Indeed, we seem to be getting a counter example that 4! = 2 mod 4.
@@ -221,8 +221,7 @@ statement for composite numbers. The argument structure is quite similar to abov
 inspiration to prove the following theorem:
 -/
 
-theorem wilson_composite (h : n ≠0 ∧ n ≠ 4) : ((n-1)! : ZMod n) = 0 := by sorry
-
+theorem wilson_composite (h : n ≠ 0 ∧ n ≠ 4) : ((n - 1)! : ZMod n) = 0 := by sorry
 
 end Composite
 
@@ -247,4 +246,4 @@ this question has quite a bit less structure than the questions above, so this q
 expected to be a bit tricky!
 -/
 
-theorem fermat_little {h : a ≠ 0} : (a^(p - 1) : ZMod p) = 1 := by sorry
+theorem fermat_little (h : a ≠ 0) : (a ^ (p - 1) : ZMod p) = 1 := by sorry
