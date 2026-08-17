@@ -102,7 +102,7 @@ example (α β γ : Type*) : (α → β) → ((α → (β → γ)) → (α → �
 /-! ### Universal quantification
 Forall statements are also encoded by functions, but where the
 codomain may depend on the bound variable.
-Practially speaking, this means that dealing with foralls is
+Practically speaking, this means that dealing with foralls is
 very similar to dealing with implications.
 
 To write the `∀` symbol, use `\forall`
@@ -130,7 +130,7 @@ example (α : Type) (p q : α → Prop) (h : ∀ x, p x → q x) :
 
 
 /-! ### Existential quantifier
-A proof of an existential statemtent `∃ x, p x`
+A proof of an existential statement `∃ x, p x`
 is a pair of an *example* `x` and
 a proof that `p x` holds.
 
@@ -239,7 +239,7 @@ If `h : p ↔ q` then `h.mp : p → q` and `h.mpr : q → p`
 example (p q : Prop) : (p ↔ q) ↔ (p → q) ∧ (q → p) := by
   constructor
   · intro pq
-    rw[pq]
+    rw [pq]
     constructor
     · intro hq
       exact hq
