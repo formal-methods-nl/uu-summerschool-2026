@@ -71,7 +71,7 @@ structure Mul where
   one : carrier
   inv : carrier → carrier
 
-/- `Mul` is a new type, the "type of multiplicative structues". -/
+/- `Mul` is a new type, the "type of multiplicative structures". -/
 #check Mul
 
 /- We can use `#print` to inspect the fields of a structure. -/

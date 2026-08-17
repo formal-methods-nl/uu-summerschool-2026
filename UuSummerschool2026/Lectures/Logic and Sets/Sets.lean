@@ -75,7 +75,7 @@ lemma Set.ext (s t : Set α) : s = t ↔ ∀ x, x ∈ s ↔ x ∈ t := by
   constructor
   · intro st
     intro x
-    rw[st]
+    rw [st]
   · intro h
     funext a
     specialize h a
@@ -121,8 +121,8 @@ def Set.empty : Set α := my{_ | False}
 def Set.univ : Set α := my{_ | True}
 
 lemma Set.mem_setOf (p : α → Prop) (x : α) :
-  x ∈ my{x' | p x'} ↔ p x := by
-  rw[Set.mem_iff]
+    x ∈ my{x' | p x'} ↔ p x := by
+  rw [Set.mem_iff]
   rfl
 
 lemma Set.mem_union (s t : Set α) (x : α) :
@@ -240,7 +240,7 @@ We're also allowed to use tactics like `rw`, `apply`, `unfold`, `ext` and so on
 example (u v : Set α) : f '' (u ∪ v) = f '' u ∪ f '' v := by sorry
 example (u v : Set β) : f ⁻¹' (u ∪ v) = f ⁻¹' u ∪ f ⁻¹' v := by
   ext a
-  rw[mem_preimage]
-  rw[mem_union, mem_union]
-  rw[mem_preimage]
-  rw[mem_preimage]
+  rw [mem_preimage]
+  rw [mem_union, mem_union]
+  rw [mem_preimage]
+  rw [mem_preimage]

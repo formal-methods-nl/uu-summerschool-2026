@@ -291,8 +291,8 @@ lemma ConvergesTo.add {a b : ℕ → ℝ} {x y : ℝ}
   calc
     |x + y - (a + b) n| = |x + y - (a n + b n)| := by rfl
                       _ = |(x - a n) + (y - b n)| := by ring_nf
-                      _ ≤ |x - a n| + |y - b n| := by exact abs_add_le _ _
-                      _ ≤ ε / 2 + ε / 2 := by exact add_le_add h1 h2
+                      _ ≤ |x - a n| + |y - b n| := abs_add_le _ _
+                      _ ≤ ε / 2 + ε / 2 := add_le_add h1 h2
                       _ = ε := by simp
 
 /--
