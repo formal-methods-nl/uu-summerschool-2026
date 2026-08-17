@@ -188,7 +188,7 @@ example (p q : Prop) : p → q → p ∧ q := by
 example (p q : Prop) : p ∧ q → q ∧ p := by
   --intro pq
   --obtain ⟨hp, hq⟩ := pq
-  rintro ⟨hp, hq⟩
+  intro ⟨hp, hq⟩
   constructor
   · exact hq
   · exact hp
@@ -289,7 +289,7 @@ Note: `contrapose!` and `push_neg` are useful for manipulating negations too.
 -/
 
 example (p : Prop) (hp : ¬ ¬ p) : p := by
-  push_neg at hp
+  push Not at hp
   exact hp
 
 example (p q : Prop) (h : ¬ p → ¬ q) : q → p := by
