@@ -73,8 +73,7 @@ which says that two sets are equal iff they have the same elements.
 
 lemma Set.ext (s t : Set α) : s = t ↔ ∀ x, x ∈ s ↔ x ∈ t := by
   constructor
-  · intro st
-    intro x
+  · intro st x
     rw[st]
   · intro h
     funext a

@@ -120,8 +120,7 @@ example : ∀ p : Prop, p → p := by
 
 example (α : Type) (p q : α → Prop) (h : ∀ x, p x → q x) :
     (∀ x, p x) → ∀ x', q x' := by
-  intro hp
-  intro x'
+  intro hp x'
   specialize hp x'
   specialize h x' hp
   assumption
@@ -144,9 +143,9 @@ When in hypothesis: `obtain`
 
 example : ∃ n : ℕ, n < n + 1 := by
   use 0
-  omega
+  lia
 
-example : ∃ n : ℕ, n < n + 1 := ⟨0, by omega⟩
+example : ∃ n : ℕ, n < n + 1 := ⟨0, by lia⟩
 
 example : ∃ n : ℕ, n = n := sorry
 
@@ -157,7 +156,7 @@ lemma ex2 (f : ℕ → ℕ)
   specialize hf m
   obtain ⟨n, hn⟩ := hf
   use n
-  omega
+  lia
 
 
 /-! ### Conjunctions
@@ -270,8 +269,7 @@ Here is an example showing `¬ p` and `p → False` really give the same thing.
 example (p : Prop) : ¬ p ↔ (p → False) := Iff.rfl
 
 example (p q : Prop) (h : p → q) : ¬ q → ¬ p := by
-  intro nq
-  intro hp
+  intro nq hp
   specialize h hp
   exact nq h
 
