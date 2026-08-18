@@ -36,18 +36,23 @@ Internally, they are implemented via Cauchy sequences of rational numbers.
 /- The real number `2` is represented by the constant Cauchy sequence `2, 2, 2, ...`. -/
 #eval (2 : ℝ)
 
+#eval 3 + 6
+
 
 
 /- This is the statement that `2 + 2 = 4` as an equality in the natural numbers. -/
-example : 2 + 2 = 4 := sorry
+example : 2 + 2 = 4 := by rfl
 
 /- This is the statement that `2 + 2 = 4` as an equality in the real numbers. -/
-example : (2 : ℝ) + 2 = 4 := sorry
+example : (2 : ℝ) + 2 = 4 := by norm_num
 
 
 
 /- Identities with real variables can be proven using `rw` with lemmas from the library. -/
-example (x y : ℝ) : (x + y) ^ 2 = x ^ 2 + 2 * x * y + y ^ 2 := by sorry
+example (x y : ℝ) : (x + y) ^ 2 = x ^ 2 + 2 * x * y + y ^ 2 := by
+  rw [pow_two, sq, sq]
+  rw [two_mul]
+  sorry
 
 
 
@@ -75,10 +80,13 @@ example (x y : ℝ) : (x + y) ^ 2 = x ^ 2 + 2 * x * y + y ^ 2 := by sorry
 
 /- This becomes quite tedious, so there exists the `ring` tactic that proves any
 identity that holds in any commutative ring. -/
-example (x y : ℝ) : (x + y) ^ 2 = x ^ 2 + 2 * x * y + y ^ 2 := by sorry
+example (x y : ℝ) : (x + y) ^ 2 = x ^ 2 + 2 * x * y + y ^ 2 := by ring
 
 example : ∀ a b : ℝ, ∃ x, (a + b) ^ 3 = a ^ 3 + x * a ^ 2 * b + 3 * a * b ^ 2 + b ^ 3 := by
-  sorry
+  intro a b
+  use 3
+  ring
+
 
 
 
@@ -104,9 +112,13 @@ example : ∀ a b : ℝ, ∃ x, (a + b) ^ 3 = a ^ 3 + x * a ^ 2 * b + 3 * a * b 
 
 /- `mathlib` defines many standard functions on the real numbers, such as `sin` and `cos`. -/
 #check (Real.sin : ℝ → ℝ)
-#check (Real.cos : ℝ → ℝ)
+#check Real.cos
 
-example (x : ℝ) : Real.sin x ^ 2 + Real.cos x ^ 2 = 1 := sorry
+--#check Set.mem_add
+
+example (x : ℝ) : Real.sin x ^ 2 + Real.cos x ^ 2 = 1 :=
+  by exact Real.sin_sq_add_cos_sq x
+  --sorry
 
 
 end Reals
@@ -129,9 +141,12 @@ section Inequalities
 
 /- The real numbers are ordered and we can use many lemmas from the library to close simple
 goals. -/
-example (x : ℝ) : x ≤ x := sorry
+example (x : ℝ) : x ≤ x := by
+  exact Std.IsPreorder.le_refl x
 
-example {x y z : ℝ} (hxy : x ≤ y) (hyz : y ≤ z) : x ≤ z := sorry
+example {x y z : ℝ} (hxy : x ≤ y) (hyz : y ≤ z) : x ≤ z := by
+  exact le_trans hxy hyz
+
 
 
 
@@ -142,18 +157,48 @@ example (x y : ℝ) : |x + y| ≤ |x| + |y| := by
   exact abs_add_le x y
 
 /- We can also use the trans tactic. -/
-example {x y z : ℝ} (hxy : x ≤ y) (hyz : y ≤ z) : x ≤ z := by sorry
-
-/- Or the calc tactic. -/
 example {x y z : ℝ} (hxy : x ≤ y) (hyz : y = z) : x ≤ z := by
-  sorry
+  trans y
+  · exact hxy
+  · exact hyz.le
+/-
+calc
+    x ≤ y := by proof
+    _ = a_1 := by proof
+    _ ≤ a_2 := by proof
+    ...
+    _ ≤ z := by proof
+
+    -/
+
+#check Eq.symm
+/- Or the calc tactic. -/
+example {x y z : ℝ} (hxy : x = y) (hyz : y ≤ z) : x ≤ z := by
+  /-calc
+    z ≥ y := hyz
+    _ = x := Eq.symm hxy-/
+
+
+  calc
+    x = y := hxy
+    _ ≤ z := hyz
+
+  --sorry
 
 
 /- Or use `linarith` to close linear arithmetic goals. -/
-example {x y z : ℝ} (hxy : x ≤ y) (hyz : y = z) : x ≤ z := by sorry
+example {x y z : ℝ} (hxy : x ≤ y) (hyz : y = z) : x ≤ z := by
+  linarith
+
 
 /- A slightly more complicated example. -/
-example {a b : ℝ} : 2 * a * b ≤ a ^ 2 + b ^ 2 := sorry
+example {a b : ℝ} : 2 * a * b ≤ a ^ 2 + b ^ 2 := by
+  have : 0 ≤ a ^ 2 - 2*a*b + b ^ 2 := by
+    calc
+      0 ≤ (a - b)^2 := by exact sq_nonneg (a - b)
+      _ = a ^ 2 - 2*a*b + b ^ 2 := sub_sq a b
+  linarith
+
 
 
 
@@ -170,10 +215,17 @@ example {a b : ℝ} : 2 * a * b ≤ a ^ 2 + b ^ 2 := sorry
 
 /- `gcongr` can be used to prove inequalities of expressions by showing
 inequalities between subexpressions. -/
-example (a b c : ℝ) (h : a ≤ b) (hc : 0 ≤ c) : a * c ≤ b * c := by sorry
+example (a b c : ℝ) (h : a ≤ b) (hc : 0 ≤ c) : a * c ≤ b * c := by
+  gcongr
+
 
 example {a b x c d : ℝ} (h1 : a + 1 ≤ b + 1) (h2 : c + 2 ≤ d + 2) :
-    x ^ 2 * a + c ≤ x ^ 2 * b + d := sorry
+    x ^ 2 * a + c ≤ x ^ 2 * b + d := by
+  gcongr
+  · linarith
+  · bound
+
+
 
 
 
@@ -202,7 +254,7 @@ section Casting
 
 /- The following simple statement seems to resist proofs by the tactics we have seen... -/
 example (n : ℕ) : n - 1 + 1 = n := by
-
+  --plausible
   sorry
 
 
@@ -323,10 +375,13 @@ stop us from having a definition of `1 / 0`.
 -/
 example : 1 / 0 = 0 := rfl
 
-example : ∃ (x : ℝ), x * (1 / x) ≠ 1 := sorry
+example : ∃ (x : ℝ), x * (1 / x) ≠ 1 := by
+  use 0
+  simp
 
 
-example (x : ℝ) (hx : 0 ≠ x) : x * (1 / x) = 1 := sorry
+example (x : ℝ) (hx : 0 ≠ x) : x * (1 / x) = 1 := by
+  exact mul_one_div_cancel (id (Ne.symm hx))
 
 end Casting
 
@@ -371,17 +426,35 @@ variable (a : ℕ → ℝ)
 The sequence `a : ℕ → ℝ` converges to `x : ℝ` if for every `ε > 0`,
 there exists `n₀ : ℕ` such that for all `n ≥ n₀`, `|x - a n| ≤ ε`.
 -/
-def ConvergesTo (a : ℕ → ℝ) (x : ℝ) : Prop := sorry
+def ConvergesTo (a : ℕ → ℝ) (x : ℝ) : Prop :=
+  ∀ ε > 0, ∃ n₀ : ℕ, ∀ n ≥ n₀, |x - a n| ≤ ε
 
 /- Use `rw [convergesTo_iff]` to unfold the definition of convergence. -/
 lemma convergesTo_iff (a : ℕ → ℝ) (x : ℝ) :
-    ConvergesTo a x ↔ sorry := by sorry
+    ConvergesTo a x ↔ ∀ ε > 0, ∃ n₀ : ℕ, ∀ n ≥ n₀, |x - a n| ≤ ε := by rfl
 
 /-- Any constant sequence converges to its value. -/
-lemma ConvergesTo.const (a : ℝ) : ConvergesTo (fun _ ↦ a) a := sorry
+lemma ConvergesTo.const (a : ℝ) : ConvergesTo (fun _ ↦ a) a := by
+  rw [convergesTo_iff]
+  intro ε hε
+  use 0
+  simp
+  exact hε.le
 
+#check Filter.Tendsto (fun n ↦ 1 / n : ℝ → ℝ) (Filter.atTop) (nhds 0)
 
-example : ConvergesTo (fun n ↦ 1 / n) 0 := sorry
+example : ConvergesTo (fun n ↦ 1 / n) 0 := by
+  rw [convergesTo_iff]
+  intro ε hε
+  use ⌈ε⁻¹⌉₊
+  intro n hn
+  simp
+  have : n ≥ ε⁻¹ := by
+    exact Nat.ceil_le.mp hn
+  apply inv_le_of_inv_le₀
+  · exact hε
+  · exact this
+
 
 
 
@@ -420,6 +493,11 @@ set_option backward.isDefEq.respectTransparency false in
 /-- Any convergent sequence is bounded. -/
 lemma ConvergesTo.bounded {a : ℕ → ℝ} {x : ℝ} (h : ConvergesTo a x) :
     Bounded a := sorry
+
+
+
+
+
 
 
 

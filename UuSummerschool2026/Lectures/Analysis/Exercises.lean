@@ -40,7 +40,11 @@ example (a b c : ℝ) : min (min a b) c = min a (min b c) := by
 #check abs_le'
 
 example (a b : ℝ) : |a * b| ≤ (a ^ 2 + b ^ 2) / 2 := by
-  sorry
+  rw [abs_le']
+  constructor
+  · field_simp
+    sorry
+  · sorry
 
 -- Hint: use `abs_add` and `add_sub_cancel_right`
 example (a b : ℝ) : |a| - |b| ≤ |a - b| :=

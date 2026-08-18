@@ -25,27 +25,38 @@ section Structures
 We can define a new type by using the `structure` keyword.
 -/
 structure PointOnCircle where
-  placeholder : sorry
+  x : ℝ
+  y : ℝ
+  lies_on_circle : x^2 + y^2 = 1
 
 
 /- To define a term of `PointOnCircle`, we can use the `where` keyword, ... -/
-example : PointOnCircle := sorry
+example : PointOnCircle where
+  x := 0
+  y := 1
+  lies_on_circle := by simp
 
 /- ... or the `{ ... }` syntax. -/
-example : PointOnCircle := sorry
+example : PointOnCircle := {
+  x := Real.cos 3
+  y := Real.sin 3
+  lies_on_circle := by simp
+}
 
 /- ... or the `⟨ ... ⟩` syntax -/
-example : PointOnCircle := sorry
+example : PointOnCircle := ⟨1, 0, by simp⟩
 
 /- We can inspect the fields of a structure using `#print`. -/
 #print PointOnCircle
 
+def northPole : PointOnCircle where
+  x := 0
+  y := 1
+  lies_on_circle := by simp
 
 /- We can access the fields of a structure using the names of the fields, e.g.: -/
-example (p : PointOnCircle) : ℝ := sorry
+example (p : PointOnCircle) : ℝ := p.x + p.y
 
-
-def northPole : PointOnCircle := sorry
 
 
 
@@ -85,16 +96,22 @@ We use the `structure` keyword to define a new type.
 -/
 
 structure MyMul where
-  placeholder : sorry
+  carrier : Type
+  mul : carrier → carrier → carrier
+  one : carrier
+  inv : carrier → carrier
 
-example : MyMul := sorry
+example : MyMul where
+  carrier := ℤ
+  mul x y := x + y
+  one := 19
+  inv x := x
 
 /- `Mul` is a new type, the "type of multiplicative structures". -/
 #check MyMul
 
 /- We can use `#print` to inspect the fields of a structure. -/
 #print MyMul
-
 
 
 
@@ -185,8 +202,8 @@ lemma one_mul {G : Group} (x : G) : 𝟙 ⋄ x = x := by
 
 
 @[simp]
-lemma inv_mul_cancel {G : Group} (x : G) : x⁻¹' ⋄ x = 𝟙 := by
-  exact G.inv_mul_cancel x
+lemma inv_mul_cancel {G : Group} (x : G) : x⁻¹' ⋄ x = 𝟙 :=
+  G.inv_mul_cancel x
 
 
 /--
@@ -205,7 +222,12 @@ lemma Group.mul_inv_cancel {G : Group} (x : G) : x ⋄ x⁻¹' = 𝟙 := by
 
 
 @[simp]
-lemma Group.mul_one {G : Group} (x : G) : x ⋄ 𝟙 = x := by sorry
+lemma Group.mul_one {G : Group} (x : G) : x ⋄ 𝟙 = x := by
+  calc
+    x ⋄ 𝟙 = x ⋄ (x⁻¹' ⋄ x) := by simp
+    _ = (x ⋄ x⁻¹') ⋄ x := by rw [mul_assoc]
+    _ = x := by simp
+
 
 
 
@@ -233,7 +255,14 @@ The non-zero elements of `ℝ` form a group.
 
 We use the `where` keyword to define terms of a structure.
 -/
-def units : Group := sorry
+def units : Group where
+  carrier := ℝˣ
+  mul := (· * ·)
+  one := 1
+  inv := (·)⁻¹
+  mul_assoc := _root_.mul_assoc
+  one_mul := by simp
+  inv_mul_cancel := by simp
 
 
 
@@ -276,7 +305,17 @@ def units₂ : Order where
 
 structure GroupAndOrder extends Group, Order
 
-def units₃ : GroupAndOrder := sorry
+#print GroupAndOrder
+
+def units₃ : GroupAndOrder where
+  carrier := units.carrier
+  mul := units.mul
+  one := units.one
+  inv := units.inv
+  mul_assoc := sorry
+  one_mul := sorry
+  inv_mul_cancel := sorry
+  le := sorry
 
 
 
@@ -314,14 +353,17 @@ So, perhaps instead of `GroupAndOrder`, we can have a type `G` and assume `Group
 This seems like it might scale better!
 -/
 structure MyMul₂ (G : Type) where
-  placeholder : sorry
+  mul : G → G → G
 
 structure MyOrder₂ (G : Type) where
-  placeholder : sorry
+  le : G → G → Prop
 
-def myMulUnits : MyMul₂ ℝˣ := sorry
+def myMulUnits : MyMul₂ ℝˣ where
+  mul x y := x * y
 
-def myOrderUnits : MyOrder₂ ℝˣ := sorry
+def myOrderUnits : MyOrder₂ ℝˣ where
+
+  le x y := x ≤ y
 
 
 
@@ -453,6 +495,7 @@ example (G : Type) [Semigroup G] (x y z w : G) :
 Why do we get an error when we try and rewrite with `eq_mul` here?
 -/
 example (x : ℝˣ) [Semigroup ℝˣ] : 1 ⋄ x = x := by
+  --rw [eq_mul]
   sorry
 
 
@@ -509,12 +552,13 @@ multiplication!
 -/
 
 
+
 example {R : Type} [AddSemigroup R] [_root_.Semigroup R] (x y z : R) :
     x * (y + z) = x * y + x * z := sorry
 
 
 example {R : Type} [Ring R] (x y z : R) :
-    x * (y + z) = x * y + x * z := sorry
+    x * (y + z) = x * y + x * z := by apply mul_add
 
 
 
@@ -552,5 +596,11 @@ Let us now look at `mathlib`s own algebraic typeclasses:
 /- and the same for additive, so e.g. -/
 
 #check AddGroup
+#check Add
+#check AddMonoid
+
+instance (G : Type*) [Ring G] : GroupWithZero G := sorry
+
+#check CategoryTheory.Category
 
 end Hierarchy
