@@ -86,15 +86,20 @@ I.e. if I have a binary function from `(A ⧸ ~₁) × (B ⧸ ~₂)` to `C`, we 
 
 
 
-
-
-
-
 /-
 We can use the usual notation for elements of a quotient by typing `\[[]]`, which produces `⟦⟧`
 
 Can also write `\[[` for `⟦`
 -/
+
+/-
+#check ⟦0⟧ : Mod 8
+-/
+
+
+
+
+
 
 
 
@@ -119,6 +124,9 @@ example (n a : ℤ) (h : n ∣ a) : (⟦a⟧ : Mod n) = ⟦0⟧ := sorry
 
 lemma add_eq (n a b : ℤ) : (⟦a⟧ + ⟦b⟧ : Mod n) = ⟦a + b⟧ := sorry
 
+/-
+One lemma that also comes in handy is `Quotient.exact`, which says `⟦a⟧ = ⟦b⟧ → a ≈ b`
+-/
 example (n a b c : ℤ) (h : (⟦a⟧ + ⟦c⟧ : Mod n) = ⟦b⟧ + ⟦c⟧) : (⟦a⟧ : Mod n) = ⟦b⟧ := sorry
 -/
 
