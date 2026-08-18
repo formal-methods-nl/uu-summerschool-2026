@@ -6,14 +6,13 @@ Authors: Christian Merten
 import Mathlib
 
 /-!
-# Algebraic structures and typeclasses
+# Algebraic structures and typeclasses 1
 
 In this lecture we cover algebraic structures and typeclasses. We will cover:
 
 - `structure`s
 - type `class`es
 - algebraic hierarchy in mathlib
-- quotients
 -/
 
 noncomputable section
@@ -26,28 +25,47 @@ section Structures
 We can define a new type by using the `structure` keyword.
 -/
 structure PointOnCircle where
-  x : ℝ
-  y : ℝ
-  h : x ^ 2 + y ^ 2 = 1
+  placeholder : sorry
+
 
 /- To define a term of `PointOnCircle`, we can use the `where` keyword, ... -/
-def northPole : PointOnCircle where
-  x := 0
-  y := 1
-  h := by simp
+example : PointOnCircle := sorry
 
 /- ... or the `{ ... }` syntax. -/
-example : PointOnCircle :=
-  { x := Real.sqrt 2 / 2
-    y := Real.sqrt 2 / 2
-    h := by rw [div_pow]; norm_num }
+example : PointOnCircle := sorry
+
+/- ... or the `⟨ ... ⟩` syntax -/
+example : PointOnCircle := sorry
 
 /- We can inspect the fields of a structure using `#print`. -/
 #print PointOnCircle
 
+
 /- We can access the fields of a structure using the names of the fields, e.g.: -/
-example (p : PointOnCircle) : ℝ :=
-  p.x + p.y * 2
+example (p : PointOnCircle) : ℝ := sorry
+
+
+def northPole : PointOnCircle := sorry
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-
 Let us now consider something more useful.
@@ -65,20 +83,54 @@ A multiplicative structure is a
 
 We use the `structure` keyword to define a new type.
 -/
+
+structure MyMul where
+  placeholder : sorry
+
+example : MyMul := sorry
+
+/- `Mul` is a new type, the "type of multiplicative structures". -/
+#check MyMul
+
+/- We can use `#print` to inspect the fields of a structure. -/
+#print MyMul
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/-
+Here's one I prepared earlier
+-/
 structure Mul where
   carrier : Type
   mul : carrier → carrier → carrier
   one : carrier
   inv : carrier → carrier
 
-/- `Mul` is a new type, the "type of multiplicative structues". -/
-#check Mul
-
-/- We can use `#print` to inspect the fields of a structure. -/
-#print Mul
-
 /-
-This allows to write `⋄` for multiplication, `𝟙` for the identity element and
+The following allows to write `⋄` for multiplication, `𝟙` for the identity element and
 `inv` for the inverse.
 -/
 notation3:70 x:70 " ⋄ " y:71 => Mul.mul _ x y
@@ -105,17 +157,37 @@ structure Group extends Mul where
 instance : CoeSort Group Type where
   coe G := G.carrier
 
-lemma mul_assoc {G : Group} (x y z : G) : (x ⋄ y) ⋄ z = x ⋄ (y ⋄ z) :=
-  G.mul_assoc x y z
+
+
+
+
+
+
+
+
+
+
+
+
+
+/-
+We can prove various expected identities hold for groups
+-/
+
+lemma mul_assoc {G : Group} (x y z : G) : (x ⋄ y) ⋄ z = x ⋄ (y ⋄ z) := by
+  exact G.mul_assoc x y z
+
 
 /- We use `@[simp]` to add a lemma to the simplifier. -/
 @[simp]
-lemma one_mul {G : Group} (x : G) : 𝟙 ⋄ x = x :=
-  G.one_mul x
+lemma one_mul {G : Group} (x : G) : 𝟙 ⋄ x = x := by
+  exact G.one_mul x
+
 
 @[simp]
-lemma inv_mul_cancel {G : Group} (x : G) : x⁻¹' ⋄ x = 𝟙 :=
-  G.inv_mul_cancel x
+lemma inv_mul_cancel {G : Group} (x : G) : x⁻¹' ⋄ x = 𝟙 := by
+  exact G.inv_mul_cancel x
+
 
 /--
 If `G` is a group, then also `x ⋄ x⁻¹' = 𝟙`.
@@ -123,58 +195,152 @@ If `G` is a group, then also `x ⋄ x⁻¹' = 𝟙`.
 -/
 @[simp]
 lemma Group.mul_inv_cancel {G : Group} (x : G) : x ⋄ x⁻¹' = 𝟙 := by
-  calc x ⋄ x⁻¹' = 𝟙 ⋄ (x ⋄ x⁻¹') := by rw [one_mul]
-               _ = ((x ⋄ x⁻¹')⁻¹' ⋄ (x ⋄ x⁻¹')) ⋄ (x ⋄ x⁻¹') := by rw [inv_mul_cancel]
-               _ = (x ⋄ x⁻¹')⁻¹' ⋄ (x ⋄ ((x⁻¹' ⋄ x) ⋄ x⁻¹')) := by simp only [mul_assoc]
-               _ = 𝟙 := by simp
+  calc
+    x ⋄ x⁻¹' = 𝟙 ⋄ (x ⋄ x⁻¹') := by simp
+    _ = ((x ⋄ x⁻¹')⁻¹' ⋄ (x ⋄ x⁻¹')) ⋄ (x ⋄ x⁻¹') := by simp
+    _ = ((x ⋄ x⁻¹')⁻¹' ⋄ (x ⋄ ((x⁻¹' ⋄ x) ⋄ x⁻¹'))) := by simp only [mul_assoc]
+    _ = 𝟙 := by simp
+
+
+
 
 @[simp]
-lemma Group.mul_one {G : Group} (x : G) : x ⋄ 𝟙 = x := by
-  rw [← inv_mul_cancel _ x, ← mul_assoc, mul_inv_cancel, one_mul]
+lemma Group.mul_one {G : Group} (x : G) : x ⋄ 𝟙 = x := by sorry
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-
 The non-zero elements of `ℝ` form a group.
 
 We use the `where` keyword to define terms of a structure.
 -/
-def units : Group where
-  carrier := ℝˣ
-  mul x y := x * y
-  one := 1
-  inv x := x⁻¹
-  mul_assoc := _root_.mul_assoc
-  one_mul := by simp
-  inv_mul_cancel := by simp
+def units : Group := sorry
 
-/- `ℝˣ` is not only a group, but also an ordered type. -/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/- `ℝˣ` is not only a group, but also an ordered type; it has a `≤` function. -/
 
 structure Order where
-  /-- The underlying type. -/
   carrier : Type
-  /-- The `≤` relation -/
   le : carrier → carrier → Prop
 
 /- What do we do to say `Rˣ` is a group with an ordering? -/
 
 def units₂ : Order where
   carrier := ℝˣ
-  le := (· ≤ ·)
+  le a b := a ≤ b
 
 structure GroupAndOrder extends Group, Order
 
-def units₃ : GroupAndOrder where
-  carrier := ℝˣ
-  mul x y := x * y
-  one := 1
-  inv x := x⁻¹
-  mul_assoc := _root_.mul_assoc
-  one_mul := by simp
-  inv_mul_cancel := by simp
-  le := (· ≤ ·)
+def units₃ : GroupAndOrder := sorry
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /- This becomes very tedious! New attempt! -/
 
 namespace NewAttempt
+
+/-
+We can also define structures which take in arguments (rather than having a `carrier` field)
+
+So, perhaps instead of `GroupAndOrder`, we can have a type `G` and assume `Group G` and `Order G`.
+This seems like it might scale better!
+-/
+structure MyMul₂ (G : Type) where
+  placeholder : sorry
+
+structure MyOrder₂ (G : Type) where
+  placeholder : sorry
+
+def myMulUnits : MyMul₂ ℝˣ := sorry
+
+def myOrderUnits : MyOrder₂ ℝˣ := sorry
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 structure Mul₂ (G : Type) where
   mul : G → G → G
@@ -192,15 +358,47 @@ def orderUnits : Order₂ ℝˣ where
 
 scoped notation3:70 x:70 " ⋄ " y:71 => Mul₂.mul _ x y
 
-/-
-Uncomment the following and observe the error message:
 
+--Uncomment the following and observe the error message:
+
+/-
 example {G : Type} (m : Mul₂ G) (x y z : G) :
     (x ⋄ y) ⋄ z = x ⋄ (y ⋄ z) :=
-  sorry
+  sorry-/
 
-Lean complains, that it does not know which multiplication structure it should use on `G`!
+
+
+
+
+
+
+
+
+
+
+--Lean complains, that it does not know which multiplication structure it should use on `G`!
+
+
+/-
+We can still state associativity using this method, but it looks very awkward:
 -/
+
+example {G : Type} (m : Mul₂ G) (x y z : G) :
+    m.mul (m.mul x y) z = m.mul x (m.mul y z) := sorry
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end NewAttempt
 
@@ -220,6 +418,18 @@ class Mul₃ (G : Type) where
 
 notation3:70 x:70 " ⋄ " y:71 => Mul₃.mul x y
 
+
+
+
+
+
+
+
+
+
+
+
+
 class Semigroup (G : Type) extends Mul₃ G where
   mul_assoc (x y z : G) : (x ⋄ y) ⋄ z = x ⋄ (y ⋄ z)
 
@@ -238,23 +448,55 @@ example (G : Type) [Semigroup G] (x y z w : G) :
     (x ⋄ y) ⋄ (z ⋄ w) = x ⋄ (y ⋄ z) ⋄ w := by
   simp [Semigroup.mul_assoc]
 
-/- A very common mistake. -/
-/--
-error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
-  ?x ⋄ ?y
-in the target expression
-  1 ⋄ x = x
- x : ℝˣ
-inst✝ : Semigroup ℝˣ
-⊢ 1 ⋄ x = x
+
+/-
+Why do we get an error when we try and rewrite with `eq_mul` here?
 -/
-#guard_msgs in
 example (x : ℝˣ) [Semigroup ℝˣ] : 1 ⋄ x = x := by
-  rw [eq_mul]
-  simp
+  sorry
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /- The problem is that by assuming `[Semigroup ℝˣ]`, we put a second, completely
 unrelated semigroup structure on `ℝˣ` that we know nothing about. -/
+
+example (x : ℝˣ) : 1 ⋄ x = x := by
+  rw [eq_mul]
+  simp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-
 Typeclasses operate under the assumption that there is only ever one unique instance
@@ -265,6 +507,31 @@ multiplication!
 
 `mathlib`s solution: distinguish `Semigroup` and `AddSemigroup`.
 -/
+
+
+example {R : Type} [AddSemigroup R] [_root_.Semigroup R] (x y z : R) :
+    x * (y + z) = x * y + x * z := sorry
+
+
+example {R : Type} [Ring R] (x y z : R) :
+    x * (y + z) = x * y + x * z := sorry
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end Structures
 
@@ -287,55 +554,3 @@ Let us now look at `mathlib`s own algebraic typeclasses:
 #check AddGroup
 
 end Hierarchy
-
-namespace Quotients
-
-/-
-Besides the `structure` command, there is a different way to construct new types:
-By taking quotients by equivalence relations.
--/
-
-/-- A relation on integers: Two integers are equivalent if and only if their difference is
-divisible by `n`. -/
-def Rel (n : ℤ) (x y : ℤ) : Prop := n ∣ x - y
-
-/-- `Rel` is an equivalence relation. -/
-lemma Rel.equivalence (n : ℤ) : Equivalence (Rel n) where
-  refl x := by simp [Rel]
-  symm {x y} hxy := by
-    dsimp [Rel] at *
-    rw [dvd_sub_comm]
-    exact hxy
-  trans {x y z} hxy hyz := by
-    dsimp [Rel] at *
-    obtain ⟨k, hk⟩ := hxy
-    obtain ⟨m, hm⟩ := hyz
-    use k + m
-    linarith
-
-/-- An equivalence relation on `ℤ`. -/
-def modSetoid (n : ℤ) : Setoid ℤ where
-  r := Rel n
-  iseqv := Rel.equivalence n
-
-/-- The type of integers modulo `n`: The quotient of `ℤ` by the relation `Rel`. -/
-abbrev Mod (n : ℤ) : Type :=
-  Quotient (modSetoid n)
-
-/-- An addition on the integers modulo `n`. -/
-instance (n : ℤ) : Add (Mod n) where
-  add := by
-    /- We use the universal property of the quotient: To define a function out of `Mod n`, it suffices
-    to define a function out of `ℤ` that is constant on equivalence classes.
-    `⟦x⟧` (type with `\[[` and `\]]`) is notation for the image of `x` in the quotient `Mod n`.
-    -/
-    apply Quotient.lift₂ (fun x y ↦ ⟦x + y⟧)
-    intro x y z w hxz hyw
-    obtain ⟨k, hk⟩ := hxz
-    obtain ⟨m, hm⟩ := hyw
-    /- To show two representatives are equal in the quotient, it suffices to show they are related. -/
-    apply Quotient.sound
-    use k + m
-    linarith
-
-end Quotients
