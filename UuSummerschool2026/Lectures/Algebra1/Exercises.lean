@@ -48,7 +48,7 @@ This means that set-theoretic notations such as `∪` and `∩` are not
 always the right concepts in group theory. Instead, Lean uses
 "lattice notation". The intersection of two subgroups `H` and `K` of `G`
 is `H ⊓ K`, and the subgroup they generate is `H ⊔ K`. To say
-that `H` is a subset of `K` we use `H ≤ K`. The smallest subgroup
+that `H` is a subgroup of `K` we use `H ≤ K`. The smallest subgroup
 of `G`, i.e., {e}, is `⊥`, and the biggest subgroup (i.e. G, but
 G is a group not a subgroup so it's not G) is `⊤`.
 
