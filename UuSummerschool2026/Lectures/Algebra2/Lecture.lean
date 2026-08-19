@@ -27,16 +27,32 @@ def Rel (n : ℤ) (x y : ℤ) : Prop := n ∣ (x - y)
 
 /-- `Rel` is an equivalence relation. -/
 lemma Rel.equivalence (n : ℤ) : Equivalence (Rel n) where
-  refl x := sorry
-  symm {x y} hxy := sorry
-  trans {x y z} hxy hyz := sorry
+  refl x := by simp [Rel]
+  symm {x y} hxy := by
+    simp only [Rel] at hxy ⊢
+    obtain ⟨k, hk⟩ := hxy
+    use -k
+    linarith
+  trans {x y z} hxy hyz := by
+    simp only [Rel] at *
+    obtain ⟨k, hk⟩ := hxy
+    obtain ⟨m, hm⟩ := hyz
+    use k + m
+    linarith
 
 
 /-- An equivalence relation on `ℤ` is called a `Setoid` in lean. -/
-def modSetoid (n : ℤ) : Setoid ℤ := sorry
+def modSetoid (n : ℤ) : Setoid ℤ where
+  r := Rel n
+  iseqv := Rel.equivalence n
+
+--def test : Type := ℤ
+
+--#synth Add ℤ
+--#synth Add test
 
 /-- The type of integers modulo `n`: The quotient of `ℤ` by the relation `Rel`. -/
-abbrev Mod (n : ℤ) : Type := sorry
+abbrev Mod (n : ℤ) : Type := Quotient (modSetoid n)
 
 
 
@@ -92,9 +108,9 @@ We can use the usual notation for elements of a quotient by typing `\[[]]`, whic
 Can also write `\[[` for `⟦`
 -/
 
-/-
-#check ⟦0⟧ : Mod 8
--/
+
+#check (⟦0⟧ : Mod 8)
+
 
 
 
@@ -109,26 +125,49 @@ Can also write `\[[` for `⟦`
 
 
 /-- An addition on the integers modulo `n`. -/
-instance (n : ℤ) : Add (Mod n) where
+instance u (n : ℤ) : Add (Mod n) where
   add := by
+    apply Quotient.lift₂ (fun a b ↦ ⟦a + b⟧)
+    intro a b c d hac hbd
+    apply Quotient.sound
 
-    sorry
+    obtain ⟨k, hk⟩ := hac
+    obtain ⟨m, hm⟩ := hbd
+    use (k + m)
+    grind
 
 /-
 Commented out because it does not type check if `Mod` is not defined as a quotient (and the definition
-was sorried at the beginning)
+was sorried at the beginning)-/
 
-example : (⟦2⟧ : Mod 11) + ⟦10⟧ = ⟦1⟧ := by sorry
+example : (⟦2⟧ : Mod 11) + ⟦10⟧ = ⟦1⟧ := by
+  apply Quotient.sound
+  use 1
+  simp
 
-example (n a : ℤ) (h : n ∣ a) : (⟦a⟧ : Mod n) = ⟦0⟧ := sorry
 
-lemma add_eq (n a b : ℤ) : (⟦a⟧ + ⟦b⟧ : Mod n) = ⟦a + b⟧ := sorry
+example (n a : ℤ) (h : n ∣ a) : (⟦a⟧ : Mod n) = ⟦0⟧ := by
+  apply Quotient.sound
+  obtain ⟨k, hk⟩ := h
+  use k
+  simp [hk]
+
+lemma add_eq (n a b : ℤ) : (⟦a⟧ + ⟦b⟧ : Mod n) = ⟦a + b⟧ := by
+  apply Quotient.sound
+  simp only [Setoid.refl]
 
 /-
 One lemma that also comes in handy is `Quotient.exact`, which says `⟦a⟧ = ⟦b⟧ → a ≈ b`
 -/
-example (n a b c : ℤ) (h : (⟦a⟧ + ⟦c⟧ : Mod n) = ⟦b⟧ + ⟦c⟧) : (⟦a⟧ : Mod n) = ⟦b⟧ := sorry
--/
+example (n a b c : ℤ) (h : (⟦a⟧ + ⟦c⟧ : Mod n) = ⟦b⟧ + ⟦c⟧) : (⟦a⟧ : Mod n) = ⟦b⟧ := by
+  apply Quotient.sound
+  rw [add_eq, add_eq] at h
+  have h' := Quotient.exact h
+  obtain ⟨k, hk⟩ := h'
+  use k
+  linarith
+
+
 
 
 
