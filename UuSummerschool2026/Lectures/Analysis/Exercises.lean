@@ -3,7 +3,9 @@ Copyright (c) 2025 Christian Merten. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Christian Merten
 -/
-import UuSummerschool2026.Lectures.Analysis.Lecture
+-- import UuSummerschool2026.Lectures.Analysis.Lecture
+-- import UuSummerschool2026.Lectures.Analysis.Lecture
+import Mathlib
 
 /-!
 # Exercises for real analysis and linear arithmetic
@@ -11,36 +13,79 @@ import UuSummerschool2026.Lectures.Analysis.Lecture
 Try to fill in the following `sorry`s.
 -/
 
+section Begin
+
 example : ∃ (x : ℝ), x + 37 = 42 := by
-  sorry
+  use 5
+  ring
 
 -- Try to prove this only using `rw`, possibly useful lemmas:
 -- `pow_two`, `mul_sub`, `add_mul`, `add_sub`, `sub_sub`, `add_zero`
 -- Then rewrite the proof using `calc`.
 example (a b : ℝ) : (a + b) * (a - b) = a ^ 2 - b ^ 2 := by
+  -- repeat rw [pow_two]
+  -- repeat rw [mul_sub]
+  -- repeat rw [add_mul]
+  -- rw [← sub_sub]
   sorry
 
+
 example {a b c d : ℝ} (hyp : c = d * a + b) (hyp' : b = a * d) : c = 2 * a * d := by
-  sorry
+  rw [hyp'] at hyp
+  rw [mul_comm] at hyp
+  rw [← mul_add] at hyp
+  rw [← two_mul] at hyp
+  rw [← mul_assoc] at hyp
+  rw [mul_comm a 2] at hyp
+  exact hyp
 
 -- Use `apply?` to search for useful lemmas.
 example (a b : ℝ) : min a b = min b a := by
   -- Hint: By `le_antisymm`, it suffices to show `LHS ≤ RHS` and `RHS ≤ LHS`.
   apply le_antisymm
-  · sorry
-  · sorry
+  · apply le_min
+    · apply min_le_right
+    · apply min_le_left
+  · apply le_min
+    · apply min_le_right
+    · apply min_le_left
 
 example (a b : ℝ) : max a b = max b a := by
-  sorry
+  apply le_antisymm
+  · apply max_le
+    · apply le_max_right
+    · apply le_max_left
+  · apply max_le
+    · apply le_max_right
+    · apply le_max_left
 
 example (a b c : ℝ) : min (min a b) c = min a (min b c) := by
-  sorry
+  apply le_antisymm
+  · apply le_min
+    · trans (min a b)
+      · apply min_le_left
+      · apply min_le_left
+    · apply le_min
+      · trans (min a b)
+        · apply min_le_left
+        · apply min_le_right
+      · apply min_le_right
+  · apply le_min
+    · apply le_min
+      · apply min_le_left
+      · trans (min b c)
+        · apply min_le_right
+        · apply min_le_left
+    · trans (min b c)
+      · apply min_le_right
+      · apply min_le_right
 
 -- Hint for the next one:
 #check abs_le'
 
 example (a b : ℝ) : |a * b| ≤ (a ^ 2 + b ^ 2) / 2 := by
-  sorry
+  rw [abs_le']
+  constructor
 
 -- Hint: use `abs_add` and `add_sub_cancel_right`
 example (a b : ℝ) : |a| - |b| ≤ |a - b| :=
@@ -59,6 +104,8 @@ example {a b c d : ℝ} (h : b ≤ d) :
 example {a b c d : ℝ} (h : b ≤ d) (hc : 1 ≤ c + 1) :
     b * |a| + 2 * c ≤ c * 4 + |a| * d := by
   sorry
+
+end Begin
 
 section CaseSplitting
 
