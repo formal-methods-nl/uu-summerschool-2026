@@ -36,7 +36,13 @@ example (a b : G) (ha : a ∈ H) (hb : b ∈ H) : a * b ∈ H := by
 
 example (a b c : G) (ha : a ∈ H) (hb : b ∈ H) (hc : c ∈ H) :
     a * b⁻¹ * 1 * (a * c) ∈ H := by
-  sorry
+    rw [mul_one]
+    apply H.mul_mem
+    · apply H.mul_mem
+      · exact ha
+      · apply H.inv_mem
+        exact hb
+    · exact H.mul_mem ha hc
 
 /-
 
@@ -70,8 +76,10 @@ example (H K : Subgroup G) (a : G) : a ∈ H ⊓ K ↔ a ∈ H ∧ a ∈ K := by
   While `exact?` is running, see if you can find the relevant lemma first on `loogle`
 -/
 example (H K : Subgroup G) (a : G) : a ∈ H ∨ a ∈ K → a ∈ H ⊔ K := by
-
-  sorry
+  intro a_in_h_or_a_in_k
+  obtain a_in_h | a_in_k := a_in_h_or_a_in_k
+  · exact Subgroup.mem_sup_left a_in_h
+  · exact Subgroup.mem_sup_right a_in_k
 
 end Subgroups
 
@@ -97,14 +105,16 @@ example (a b : G) : φ (a * b⁻¹ * 1) = φ a * (φ b)⁻¹ * 1 := by
   -- if `φ.map_mul` means that `φ` preserves multiplication
   -- (and you can rewrite with this) then what do you think
   -- the lemmas that `φ` preserves inverse and one are called?
-  sorry
+  rw [φ.map_mul, φ.map_one, φ.map_mul, φ.map_inv]
 
 -- Group homomorphisms are extensional: if two group homomorphisms
 -- are equal on all inputs the they're the same.
 
 example (φ ψ : G →* H) (h : ∀ g : G, φ g = ψ g) : φ = ψ := by
   -- Use the `ext` tactic.
-  sorry
+  ext hg
+  specialize h hg
+  exact h
 
 end Homomorphisms
 
@@ -130,12 +140,16 @@ example {M : Type} [Monoid M] (a b c : M) (hab : a * b = 1) (hca : c * a = 1) :
     b = c := by
   -- Hint: start from `b`, insert `1 = c * a`, and use `mul_assoc`.
   -- A `calc` block could be a nice way to write this.
-  sorry
+  calc
+    b = 1 * b := by rw [one_mul]
+    _ = c * a * b := by rw [hca]
+    _ = c * 1 := by simp only [mul_assoc, hab]
+    _ = c := by rw [mul_one]
 
 -- Now the group version. Once you've done it, try weakening `Group` to `Monoid`
 -- and see exactly which step fails.
-example {G : Type} [Group G] (a b : G) : (a * b)⁻¹ = b⁻¹ * a⁻¹ := by
-  sorry
+example {G : Type} [DivInvMonoid G] (a b : G) : (a * b)⁻¹ = b⁻¹ * a⁻¹ := by
+  rw [mul_inv_rev]
 
 -- This one is true in every `Ring`, but the `ring` tactic needs commutativity.
 -- Try `ring` first, watch it fail, then try `noncomm_ring`.
