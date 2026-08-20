@@ -24,7 +24,7 @@ Now, open VS Code and click on the forall symbol on the right hand side of the s
 
 There will appear a text box, in which you copy the following URL:
 ```
-https://github.com/Raph-DG/uu-summerschool-2026
+https://github.com/formal-methods-nl/uu-summerschool-2025
 ```
 After selecting a path where the project should be installed on your computer, wait for a few minutes
 for everything to download and compile.
