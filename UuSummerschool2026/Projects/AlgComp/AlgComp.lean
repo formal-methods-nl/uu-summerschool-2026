@@ -71,10 +71,36 @@ theorem FastReverse.sound {α : Type} {xs ys : List α}
   | run rev' => simp [fast_reverse, FastReverseAcc.sound rev']
 
 lemma LAppend.complete {α : Type} {xs ys zs : List α}
-  : xs ++ ys = zs → Nonempty (LAppend xs ys zs) := sorry
+  : xs ++ ys = zs → Nonempty (LAppend xs ys zs) := by
+    intro f
+    apply Nonempty.intro
+    induction xs generalizing ys zs with
+    | nil          =>
+      simp [· ++ ·] at f
+      simp [Append.append] at f
+      rw [f]
+      exact LAppend.base
+    | cons x xs ih =>
+      rw [List.cons_append] at f
+      subst zs
+      apply LAppend.step
+      exact ih rfl
 
+-- NOTE: I couldn't figure out how to `Nonempty.intro` like in `FastReverse.complete`
 theorem SlowReverse.complete {α : Type} {xs ys : List α}
-  : slow_reverse xs = ys → Nonempty (SlowReverse xs ys) := sorry
+  : slow_reverse xs = ys → Nonempty (SlowReverse xs ys) := by
+  intro f
+  apply Nonempty.intro
+  induction xs generalizing ys with
+  | nil =>
+    simp [slow_reverse] at f
+    rw [f]
+    exact SlowReverse.base
+  | cons x xs ih =>
+    simp [slow_reverse] at f
+    apply SlowReverse.step (ih rfl)
+    apply Classical.choice
+    exact LAppend.complete f
 
 lemma FastReverseAcc.complete {α : Type} {xs ys acc : List α}
   : fast_reverse_acc xs acc = ys → Nonempty (FastReverseAcc xs acc ys) := by
@@ -150,6 +176,7 @@ lemma LAppend.exact_steps {α : Type} {xs ys zs : List α} (lapp : LAppend xs ys
   | base      => simp [LAppend.cost]
   | step _ ih => simp [LAppend.cost, ih, Nat.add_comm]
 
+-- TODO: don't grind
 theorem SlowReverse.exact_steps {α : Type} {xs ys : List α} (rev : SlowReverse xs ys)
   : SlowReverse.cost rev = 1 + xs.length + xs.length * (xs.length + 1) / 2 := by
   induction rev with
@@ -182,22 +209,22 @@ class Size₁ (A : Type) where
 class Size₂ {A B : Type} (P : A → B → Type) where
   size : {x : A} → {y : B} → P x y → Nat
 
-notation "|" x "|₁" => Size₁.size x
-notation "|" x "|₂" => Size₂.size x
+notation "₁|" x "|₁" => Size₁.size x
+notation "₂|" x "|₂" => Size₂.size x
 
 def BigO {A B : Type} [Size₁ A] (G : A → B → Type) [Size₂ G] (f : ℕ → ℕ) : Prop :=
   ∃ c₀ c : ℕ,
   ∀ {x : A} {y : B} {n : ℕ},
   ∀ g : G x y,
-  |x|₁ = n →
-  |g|₂ ≤ c₀ + c * f n
+  ₁|x|₁ = n →
+  ₂|g|₂ ≤ c₀ + c * f n
 
 infix:50 " ∈O " => BigO
 
 instance {α : Type} : Size₁ (List α) where
   size := List.length
 
-instance {α : Type} {ys : List α}: Size₂ (A := List α) (B := List α)
+instance {α : Type} {ys : List α} : Size₂ (A := List α) (B := List α)
   (λ xs zs ↦ LAppend xs ys zs) where
   size := LAppend.cost
 
@@ -207,11 +234,11 @@ instance {α : Type} : Size₂ (A := List α) (B := List α) SlowReverse where
 instance {α : Type} : Size₂ (A := List α) (B := List α) FastReverse where
   size := FastReverse.cost
 
-instance {α : Type} {acc : List α}: Size₂ (A := List α) (B := List α)
+instance {α : Type} {acc : List α} : Size₂ (A := List α) (B := List α)
   (λ xs ys ↦ FastReverseAcc xs acc ys) where
   size := FastReverseAcc.cost
 
-lemma LAppend.linear {α : Type} {ys : List α}
+lemma LAppend.worst_case {α : Type} {ys : List α}
   : (λ (xs : List α) ↦ LAppend xs ys) ∈O (λ n ↦ n) := by
   unfold BigO
   refine ⟨1, 1, ?_⟩
@@ -224,7 +251,7 @@ lemma LAppend.linear {α : Type} {ys : List α}
       omega
 
 -- TODO: reuse LAppend
-theorem SlowReverse.quadratic {α : Type}
+theorem SlowReverse.worst_case {α : Type}
   : (λ (xs : List α) ↦ SlowReverse xs) ∈O (λ n ↦ n * n) := by
   unfold BigO
   refine ⟨1, 2, ?_⟩
@@ -235,7 +262,7 @@ theorem SlowReverse.quadratic {α : Type}
       simp [Size₁.size, Size₂.size, SlowReverse.cost, SlowReverse.preserves_length rev, LAppend.exact_steps lapp] at *
       nlinarith
 
-theorem FastReverseAcc.linear {α : Type} {acc : List α}
+theorem FastReverseAcc.worst_case {α : Type} {acc : List α}
   : (λ (xs : List α) ↦ FastReverseAcc xs acc) ∈O (λ n ↦ n) := by
     unfold BigO
     refine ⟨1, 1, ?_⟩
@@ -247,16 +274,130 @@ theorem FastReverseAcc.linear {α : Type} {acc : List α}
       simp [Size₁.size, Size₂.size, FastReverseAcc.cost] at *
       omega
 
-theorem FastReverse.linear {α : Type}
+theorem FastReverse.worst_case {α : Type}
   : (λ (xs : List α) ↦ FastReverse xs) ∈O (λ n ↦ n) := by
   unfold BigO
-  rcases FastReverseAcc.linear with ⟨c₀, c, h⟩
+  rcases FastReverseAcc.worst_case with ⟨c₀, c, h⟩
   refine ⟨c₀, c, ?_⟩
   intro xs ys n rev hxs
   cases rev with
   | run rev => exact h rev hxs
 
 end Complexity
+
+
+
+section Invariants
+
+inductive Tree' : Type where
+  | leaf : Tree'
+  | node : Tree' → ℕ → Tree' → Tree'
+
+-- NOTE: shouldn't this be called elem?
+def find : ℕ → Tree' → Bool
+  | _, .leaf => false
+  | k, .node l b r =>
+    if k == b then true
+    else if k < b then find k l
+    else find k r
+
+def Tree'.size : Tree' → ℕ
+  | .leaf       => 1
+  | .node l _ r => 1 + size l + size r
+
+instance : Size₁ Tree' where
+  size := Tree'.size
+
+inductive Find (k : ℕ) : Tree' → Bool → Type where
+ | base                                                   :              Find k .leaf         false
+ | stop  {l r : Tree'}                                    :              Find k (.node l k r) true
+ | left  {l r : Tree'} {x : ℕ} {b : Bool} {hkltx : k < x} : Find k l b → Find k (.node l x r) b
+ | right {l r : Tree'} {x : ℕ} {b : Bool} {hkgtx : k > x} : Find k r b → Find k (.node l x r) b
+
+theorem Find.sound    {k : ℕ} {t : Tree'} {b : Bool} : Find k t b   → find k t = b          := sorry
+theorem Find.complete {k : ℕ} {t : Tree'} {b : Bool} : find k t = b → Nonempty (Find k t b) := sorry
+
+def Find.cost {k : ℕ} {t : Tree'} {b : Bool} : Find k t b → ℕ
+  | .base      => 1
+  | .stop      => 1
+  | .left  f => 1 + Find.cost f
+  | .right f => 1 + Find.cost f
+
+instance {k : ℕ} : Size₂ (Find k) where
+  size := Find.cost
+
+theorem Find.worst_case {k : ℕ} : (Find k) ∈O (λ n ↦ n) := by
+  unfold BigO
+  refine ⟨1, 1, ?_⟩
+  intro t b n find ht
+  induction find generalizing n with
+  | base => simp [Size₂.size, Find.cost]
+  | stop => simp [Size₂.size, Find.cost]
+  | @left l r x b' hklex find' ih =>
+    specialize ih rfl
+    simp [Size₁.size, Size₂.size, Find.cost, Tree'.size] at *
+    omega
+  | @right l r x b' h f ih =>
+    specialize ih rfl
+    simp [Size₁.size, Size₂.size, Find.cost, Tree'.size] at *
+    omega
+
+def Tree'.Balanced (l r : Tree') : Prop := Tree'.size l = Tree'.size r
+
+inductive FindBalanced (k : ℕ) : Tree' → Bool → Type where
+  | base                                                                             :                      FindBalanced k .leaf         false
+  | stop  {l r : Tree'}                                                              :                      FindBalanced k (.node l k r) true
+  | left  {l r : Tree'} {x : ℕ} {b : Bool} {hb : Tree'.Balanced l r} {hkltx : k < x} : FindBalanced k l b → FindBalanced k (.node l x r) b
+  | right {l r : Tree'} {x : ℕ} {b : Bool} {hb : Tree'.Balanced l r} {hkgtx : k > x} : FindBalanced k r b → FindBalanced k (.node l x r) b
+
+theorem FindBalanced.sound    {k : ℕ} {t : Tree'} {b : Bool} : FindBalanced k t b → find k t = b                  := sorry
+theorem FindBalanced.complete {k : ℕ} {t : Tree'} {b : Bool} : find k t = b       → Nonempty (FindBalanced k t b) := sorry
+
+def FindBalanced.cost {k : ℕ} {t : Tree'} {b : Bool} : FindBalanced k t b → ℕ
+  | .base    => 1
+  | .stop    => 1
+  | .left  f => 1 + FindBalanced.cost f
+  | .right f => 1 + FindBalanced.cost f
+
+instance {k : ℕ} : Size₂ (FindBalanced k) where
+  size := FindBalanced.cost
+
+lemma Tree'.size_pos (t : Tree') : 0 < Tree'.size t := by
+  cases t with
+  | leaf       => simp only [Tree'.size]; omega
+  | node l b r => simp only [Tree'.size]; omega
+
+lemma nat_log2_double_add_one_le {m : ℕ} (hm : 0 < m)
+  : Nat.log2 m + 1 ≤ Nat.log2 (1 + 2 * m) := by
+  rw [← Nat.log2_two_mul (by omega)]
+  apply (Nat.le_log2 (by omega)).mpr
+  exact Nat.le_trans (Nat.log2_self_le (by omega)) (by omega)
+
+theorem FindBalanced.worst_case {k : ℕ} : (FindBalanced k) ∈O (λ n ↦ Nat.log2 n) := by
+  unfold BigO
+  refine ⟨2, 1, ?_⟩
+  intro t b n find ht
+  induction find generalizing n with
+  | base =>
+    simp [Size₁.size, Size₂.size, FindBalanced.cost] at *
+    omega
+  | stop =>
+    simp [Size₁.size, Size₂.size, FindBalanced.cost] at *
+    omega
+  | @left l r x b' hb hkltx find' ih =>
+      unfold Tree'.Balanced at hb
+      specialize ih rfl
+      simp [Size₁.size, Size₂.size, FindBalanced.cost, Tree'.size] at *
+      simp only [← ht, ← hb, Nat.add_assoc, ← Nat.two_mul]
+      linarith [nat_log2_double_add_one_le (Tree'.size_pos l)]
+  | @right l r x b' hb hkgtx find' ih =>
+      unfold Tree'.Balanced at hb
+      specialize ih rfl
+      simp [Size₁.size, Size₂.size, FindBalanced.cost, Tree'.size] at *
+      simp only [← ht, hb, Nat.add_assoc, ← Nat.two_mul]
+      linarith [nat_log2_double_add_one_le (Tree'.size_pos r)]
+
+end Invariants
 
 
 
