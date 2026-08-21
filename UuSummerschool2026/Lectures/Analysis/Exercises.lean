@@ -42,7 +42,7 @@ example (a b c : ℝ) : min (min a b) c = min a (min b c) := by
 example (a b : ℝ) : |a * b| ≤ (a ^ 2 + b ^ 2) / 2 := by
   sorry
 
--- Hint: use `abs_add` and `add_sub_cancel_right`
+-- Hint: use `abs_sub` and `add_sub_cancel_right`
 example (a b : ℝ) : |a| - |b| ≤ |a - b| :=
   sorry
 
