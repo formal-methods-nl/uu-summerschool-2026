@@ -17,3 +17,4 @@ scope = "leanprover-community"
 
 [[lean_lib]]
 name = "UuSummerschool2026"
+globs = ["UuSummerschool2026.*"]
