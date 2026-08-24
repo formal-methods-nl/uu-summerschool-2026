@@ -42,7 +42,7 @@ The dictionary is roughly:
 | `Type u`                                  | an inaccessible cardinal      |
 
 
-This interpretation fron type theory to set theory gives us the following:
+This interpretation from type theory to set theory gives us the following:
 
   if ZFC + "there are `n` inaccessible cardinals" (for every `n`) is consistent,
   then Lean's type theory is consistent.
@@ -130,7 +130,7 @@ Because proofs are irrelevant, we are (mostly) not allowed to extract *data* fro
 
 example (h : ∃ n : ℕ, n > 3) : ∃ n : ℕ, n > 2 := by
   obtain ⟨n, hn⟩ := h
-  exact ⟨n, by omega⟩
+  exact ⟨n, by lia⟩
 
 -- example (h : ∃ n : ℕ, n > 3) : ℕ := by
 --   obtain ⟨n, hn⟩ := h
@@ -317,7 +317,7 @@ example (n : ℕ) : n + 0 = n := rfl
 
 /- But definitional equality is not magic: it can only *compute*, not reason. -/
 -- example (n : ℕ) : 0 + n = n := rfl -- fails: `0 + n` is stuck on the variable `n`
-example (n : ℕ) : 0 + n = n := by omega
+example (n : ℕ) : 0 + n = n := by lia
 
 /-
 Many definitions unfold to something you already know, and so `rfl` proves statements that
