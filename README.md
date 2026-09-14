@@ -35,8 +35,12 @@ You will find the course material in the `UuSummerschool2026` directory.
 
 Here is a list of some of the cool projects people did this year!
 https://github.com/yndongmath/Mantel-s-theorem.git
+
 https://github.com/katzenpost/CryptWalker
+
 https://github.com/johannadief/module-isomorphy-summer-school
+
 https://github.com/eyang07/uu-summerschool-2026/tree/my-work
+
 https://github.com/TimovVeen/projectivelean
 
