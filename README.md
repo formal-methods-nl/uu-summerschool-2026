@@ -34,6 +34,7 @@ You will find the course material in the `UuSummerschool2026` directory.
 ## Project Showcase
 
 Here is a list of some of the cool projects people did this year!
+
 https://github.com/yndongmath/Mantel-s-theorem.git
 
 https://github.com/katzenpost/CryptWalker
