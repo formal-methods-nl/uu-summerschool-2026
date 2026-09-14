@@ -30,3 +30,13 @@ After selecting a path where the project should be installed on your computer, w
 for everything to download and compile.
 
 You will find the course material in the `UuSummerschool2026` directory.
+
+## Project Showcase
+
+Here is a list of some of the cool projects people did this year!
+https://github.com/yndongmath/Mantel-s-theorem.git
+https://github.com/katzenpost/CryptWalker
+https://github.com/johannadief/module-isomorphy-summer-school
+https://github.com/eyang07/uu-summerschool-2026/tree/my-work
+https://github.com/TimovVeen/projectivelean
+
