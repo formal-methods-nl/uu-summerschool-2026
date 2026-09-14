@@ -407,8 +407,181 @@ end Invariants
 
 
 
-section Amortization
+section Amortized
+
+structure Q (α : Type) where
+  front : List α
+  rear  : List α
+  inv   : front = [] → rear = []
+
+def Q.empty {α : Type} : Q α := ⟨[], [], fun _ => rfl⟩
+def Q.credit {α : Type} (q : Q α) : ℕ := q.rear.length
+
+def balance {α : Type} : List α × List α → Q α
+  | ([], r)      => ⟨r.reverse, [], fun _ => rfl⟩
+  | (x :: xs, r) => ⟨x :: xs, r, fun h => absurd h (List.cons_ne_nil x xs)⟩
+
+def enq {α : Type} (x : α) (q : Q α) : Q α :=
+  balance (q.front, x :: q.rear)
+
+def deq {α : Type} (q : Q α) : Option (α × Q α) :=
+  match q.front with
+  | []      => none
+  | x :: xs => some (x, balance (xs, q.rear))
+
+inductive Balance {α : Type} : List α × List α → Q α → Type where
+  | stop {x : α} {xs ys : List α} : Balance (x :: xs, ys) ⟨x :: xs, ys, fun h => absurd h (List.cons_ne_nil x xs)⟩
+  | work {xs ys : List α} (rev : FastReverseAcc xs [] ys) : Balance ([], xs) ⟨ys, [], fun _ => rfl⟩
+
+def Balance.cost {α : Type} {p : List α × List α} {q : Q α} : Balance p q → ℕ
+  | .stop    => 1
+  | .work rv => 1 + FastReverseAcc.cost rv
+
+lemma Balance.cost_bound {α : Type} {front rear : List α} {q : Q α} (bal : Balance (front, rear) q)
+  : rear.length ≤ Balance.cost bal + q.rear.length := by
+  cases bal with
+  | stop   => simp [Balance.cost]
+  | work rv =>
+    simp [Balance.cost]
+    rw [FastReverseAcc.exact_steps rv]
+    omega
+
+instance {α : Type} : Size₁ (List α × List α) where
+  size := fun p => p.2.length
+
+instance {α : Type} : Size₂ (A := List α × List α) (B := Q α) Balance where
+  size := Balance.cost
+
+theorem Balance.worst_case {α : Type}
+  : (λ (p : List α × List α) ↦ Balance p) ∈O (λ n ↦ n) := by
+  unfold BigO
+  refine ⟨2, 1, ?_⟩
+  intro p q n bal h
+  cases bal with
+  | stop =>
+    simp [Size₁.size, Size₂.size, Balance.cost] at *
+    omega
+  | work rv =>
+    simp [Size₁.size, Size₂.size, Balance.cost, FastReverseAcc.exact_steps rv] at *
+    omega
+
+inductive Enq {α : Type} (x : α) : Q α → Q α → Type where
+  | mk {front rear : List α} {inv} {q1 : Q α} (bal : Balance (front, x :: rear) q1) : Enq x ⟨front, rear, inv⟩ q1
+
+def Enq.cost {α : Type} {x : α} {q0 q1 : Q α} : Enq x q0 q1 → ℕ
+  | .mk bal => Balance.cost bal
+
+inductive Deq {α : Type} : Q α → Q α → Type where
+  | mk {f : α} {fs rs : List α} {inv} {q1 : Q α} (bal : Balance (fs, rs) q1) : Deq ⟨f :: fs, rs, inv⟩ q1
+
+def Deq.cost {α : Type} {q0 q1 : Q α} : Deq q0 q1 → ℕ
+  | .mk bal => Balance.cost bal
+
+inductive Op {α : Type} : Q α → Q α → Type where
+  | enq {x : α} {q0 q1 : Q α} (e : Enq x q0 q1) : Op q0 q1
+  | deq {q0 q1 : Q α} (d : Deq q0 q1)         : Op q0 q1
+
+def Op.cost {α : Type} {q0 q1 : Q α} : Op q0 q1 → ℕ
+  | .enq e => Enq.cost e
+  | .deq d => Deq.cost d
+
+inductive Ops {α : Type} : Q α → Q α → Type where
+  | stop {q : Q α} : Ops q q
+  | step {q0 q1 q2 : Q α} (op : Op q0 q1) (ops : Ops q1 q2) : Ops q0 q2
+
+def Ops.cost {α : Type} {q0 q1 : Q α} : Ops q0 q1 → ℕ
+  | .stop        => 0
+  | .step op ops => Op.cost op + Ops.cost ops
+
+def Ops.length {α : Type} {q0 q1 : Q α} : Ops q0 q1 → ℕ
+  | .stop        => 0
+  | .step _ ops  => 1 + Ops.length ops
+
+def amortized_cost_op {α : Type} {q0 q1 : Q α} (op : Op q0 q1) : ℕ :=
+  Op.cost op + Q.credit q1 - Q.credit q0
+
+def amortized_cost_ops {α : Type} {q0 q1 : Q α} : Ops q0 q1 → ℕ
+  | .stop        => 0
+  | .step op ops => amortized_cost_op op + amortized_cost_ops ops
+
+theorem amortized_cost_positive {α : Type} {q0 q1 : Q α} (op : Op q0 q1)
+    : Q.credit q0 ≤ Op.cost op + Q.credit q1 := by
+  cases op with
+  | enq e =>
+    cases e with
+    | mk bal =>
+      simp [Op.cost, Enq.cost, Q.credit]
+      have h := Balance.cost_bound bal
+      simp [List.length_cons] at h
+      omega
+  | deq d =>
+    cases d with
+    | mk bal =>
+      simp [Op.cost, Deq.cost, Q.credit]
+      have h := Balance.cost_bound bal
+      omega
+
+theorem amortized_bound {α : Type} {q0 q1 : Q α} (op : Op q0 q1)
+    : amortized_cost_op op ≤ 3 := by
+  unfold amortized_cost_op
+  cases op with
+  | enq e =>
+    cases e with
+    | mk bal =>
+      cases bal with
+      | stop =>
+        simp [Op.cost, Enq.cost, Balance.cost, Q.credit, List.length_cons]
+        omega
+      | work rv =>
+        simp [Op.cost, Enq.cost, Balance.cost, Q.credit]
+        rw [FastReverseAcc.exact_steps rv]
+        simp [List.length_cons]
+        omega
+  | deq d =>
+    cases d with
+    | mk bal =>
+      cases bal with
+      | stop =>
+        simp [Op.cost, Deq.cost, Balance.cost, Q.credit]
+      | work rv =>
+        simp [Op.cost, Deq.cost, Balance.cost, Q.credit]
+        rw [FastReverseAcc.exact_steps rv]
+        omega
+
+theorem amortized_property {α : Type} {q0 q1 : Q α} (ops : Ops q0 q1)
+    : Q.credit q0 + amortized_cost_ops ops = Ops.cost ops + Q.credit q1 := by
+  induction ops with
+  | stop        => simp [amortized_cost_ops, Ops.cost]
+  | step op ops ih =>
+    simp only [amortized_cost_ops, amortized_cost_op, Ops.cost]
+    have := amortized_cost_positive op
+    omega
+
+theorem amortized_bound_ops {α : Type} {q0 q1 : Q α} (ops : Ops q0 q1)
+    : amortized_cost_ops ops ≤ 3 * ops.length := by
+  induction ops with
+  | stop        => simp [amortized_cost_ops, Ops.length]
+  | step op ops ih =>
+    simp only [amortized_cost_ops, Ops.length]
+    have := amortized_bound op
+    omega
+
+theorem amortized_constant {α : Type} {q : Q α} (ops : Ops Q.empty q)
+    : Ops.cost ops ≤ 3 * ops.length := by
+  have h := amortized_property ops
+  have h' : amortized_cost_ops ops = Ops.cost ops + Q.credit q := by
+    simpa [Q.credit, Q.empty] using h
+  calc
+    Ops.cost ops ≤ Ops.cost ops + Q.credit q := by omega
+    _ = amortized_cost_ops ops := h'.symm
+    _ ≤ 3 * ops.length := amortized_bound_ops ops
+
+end Amortized
+
+
+
+section Laziness
 
 -- *crickets*
 
-end Amortization
+end
